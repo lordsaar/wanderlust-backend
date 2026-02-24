@@ -7,9 +7,10 @@ async def generate_story(
     destination: str,
     travel_style: str,
     duration_days: int,
-    preferences: str = ""
+    preferences: str = "",
+    language: str = "English"
 ) -> str:
-    prompt = f"""You are a gifted travel writer. Write a vivid, narrative day-by-day travel story for the following trip:
+    prompt = f"""You are a gifted travel writer. You must write ENTIRELY in {language}. Every single word of the story must be in {language}. Do not use any other language. Write a vivid, narrative day-by-day travel story for the following trip:
 
 Destination: {destination}
 Travel style: {travel_style}

@@ -9,6 +9,7 @@ class StoryRequest(BaseModel):
     travel_style: str
     duration_days: int
     preferences: str = ""
+    language: str = "English"
 
 class StoryResponse(BaseModel):
     destination: str
@@ -24,7 +25,8 @@ async def create_story(request: StoryRequest):
         destination=request.destination,
         travel_style=request.travel_style,
         duration_days=request.duration_days,
-        preferences=request.preferences
+        preferences=request.preferences,
+        language=request.language
     )
     return StoryResponse(
         destination=request.destination,
