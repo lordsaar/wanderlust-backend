@@ -14,34 +14,56 @@ env:
 
 jobs:
   test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      name: Run Tests
+      runs-on: ubuntu-latest
+      
+      services:
+        postgres:
+          image: postgres:16
+          env:
+            POSTGRES_USER: test
+            POSTGRES_PASSWORD: test
+            POSTGRES_DB: test
+          options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+          ports:
+            - 5432:5432
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+      steps:
+        - uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+        - name: Set up Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.12'
 
-      - name: Lint with ruff
-        run: |
-          ruff check app/
+        - name: Install dependencies
+          run: |
+            pip install -r requirements.txt
 
-      - name: Type check with mypy
-        run: |
-          mypy app/ --ignore-missing-imports
+        - name: Lint with ruff
+          run: |
+            ruff check app/
 
-      - name: Run tests with coverage
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          DATABASE_URL: postgresql://test:test@localhost:5432/test
-        run: |
-          pytest tests/ -v --cov=app --cov-report=term-missing --cov-fail-under=80
+        - name: Type check with mypy
+          run: |
+            mypy app/ --ignore-missing-imports
+
+        - name: Run migrations
+          env:
+            DATABASE_URL: postgresql://test:test@localhost:5432/test
+          run: |
+            alembic upgrade head
+
+        - name: Run tests with coverage
+          env:
+            ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+            DATABASE_URL: postgresql://test:test@localhost:5432/test
+          run: |
+            pytest tests/ -v --cov=app --cov-report=term-missing --cov-fail-under=80
 
 
   build-and-deploy:
