@@ -26,4 +26,8 @@ Aim for approximately 150 words per day."""
         max_tokens=4096,
         messages=[{"role": "user", "content": prompt}]
     )
-    return message.content[0].text
+    
+    block = message.content[0]
+    if hasattr(block, 'text'):
+        return block.text
+    raise ValueError("Unexpected response type from Claude API")
