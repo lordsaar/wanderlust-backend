@@ -1,6 +1,11 @@
+import time
+from datetime import datetime
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import stories
+
+START_TIME = time.time()
 
 app = FastAPI(title="Wanderlust API", version="0.1.0")
 
@@ -16,11 +21,6 @@ app.add_middleware(
 )
 
 app.include_router(stories.router, prefix="/api/stories", tags=["stories"])
-
-import time
-from datetime import datetime
-
-START_TIME = time.time()
 
 @app.get("/health")
 def health_check():
