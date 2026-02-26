@@ -28,12 +28,21 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run tests
+      - name: Lint with ruff
+        run: |
+          ruff check app/
+
+      - name: Type check with mypy
+        run: |
+          mypy app/ --ignore-missing-imports
+
+      - name: Run tests with coverage
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           DATABASE_URL: postgresql://test:test@localhost:5432/test
         run: |
-          pytest tests/ -v
+          pytest tests/ -v --cov=app --cov-report=term-missing --cov-fail-under=80
+
 
   build-and-deploy:
     name: Build and Deploy

@@ -21,3 +21,4 @@ FastAPI backend for the Wanderlust AI Travel Story Generator.
 
 - `GET /health` — health check
 - `POST /api/stories/generate` — generate a travel story
+# Quality gates added
