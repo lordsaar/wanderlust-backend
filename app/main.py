@@ -17,6 +17,18 @@ app.add_middleware(
 
 app.include_router(stories.router, prefix="/api/stories", tags=["stories"])
 
+import time
+from datetime import datetime
+
+START_TIME = time.time()
+
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "service": "wanderlust-backend"}
+    uptime = int(time.time() - START_TIME)
+    return {
+        "status": "ok",
+        "service": "wanderlust-backend",
+        "version": "1.0.0",
+        "uptime_seconds": uptime,
+        "timestamp": datetime.utcnow().isoformat()
+    }
