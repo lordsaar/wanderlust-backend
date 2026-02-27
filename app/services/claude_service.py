@@ -1,7 +1,7 @@
 import anthropic
 from app.core.config import settings
 
-client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
 
 async def generate_story(
     destination: str,
@@ -21,7 +21,7 @@ Write in rich, evocative prose — not bullet points. Make the reader feel like 
 Each day should flow naturally into the next. Begin with arrival and end with departure.
 Aim for approximately 150 words per day."""
 
-    message = client.messages.create(
+    message = await client.messages.create(
         model="claude-opus-4-6",
         max_tokens=4096,
         messages=[{"role": "user", "content": prompt}]
