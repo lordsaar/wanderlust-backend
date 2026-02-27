@@ -62,3 +62,43 @@ def test_generate_story_default_language():
             "duration_days": 2
         })
         assert response.status_code == 200
+
+
+def test_delete_story_success():
+    """Should delete an existing story and return 200."""
+    with patch("app.api.routes.stories.generate_story") as mock_generate:
+        mock_generate.return_value = "A story about Rome."
+        create_response = client.post("/api/stories/generate", json={
+            "destination": "Rome",
+            "travel_style": "cultural",
+            "duration_days": 4
+        })
+        assert create_response.status_code == 200
+        story_id = create_response.json()["id"]
+
+    response = client.delete(f"/api/stories/{story_id}")
+    assert response.status_code == 200
+    assert response.json() == {"message": "Story deleted"}
+
+
+def test_delete_story_not_found():
+    """Should return 404 when story ID does not exist."""
+    response = client.delete("/api/stories/nonexistent-id")
+    assert response.status_code == 404
+
+
+def test_delete_story_already_deleted():
+    """Should return 404 when attempting to delete a story twice."""
+    with patch("app.api.routes.stories.generate_story") as mock_generate:
+        mock_generate.return_value = "A story about Lisbon."
+        create_response = client.post("/api/stories/generate", json={
+            "destination": "Lisbon",
+            "travel_style": "adventure",
+            "duration_days": 5
+        })
+        assert create_response.status_code == 200
+        story_id = create_response.json()["id"]
+
+    client.delete(f"/api/stories/{story_id}")
+    response = client.delete(f"/api/stories/{story_id}")
+    assert response.status_code == 404
