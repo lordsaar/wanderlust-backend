@@ -61,3 +61,12 @@ async def generate_story_endpoint(request: StoryRequest, db: Session = Depends(g
 def get_stories(db: Session = Depends(get_db), limit: int = 10):
     stories = db.query(Story).order_by(Story.created_at.desc()).limit(limit).all()
     return stories
+
+@router.delete("/{story_id}")
+def delete_story(story_id: str, db: Session = Depends(get_db)):
+    story = db.query(Story).filter(Story.id == story_id).first()
+    if not story:
+        raise HTTPException(status_code=404, detail="Story not found")
+    db.delete(story)
+    db.commit()
+    return {"message": "Story deleted"}
