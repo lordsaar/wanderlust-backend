@@ -1,9 +1,10 @@
 import uuid
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, Request
 from sqlalchemy.orm import Session
 from app.models.story import Story
 from app.core.database import get_db
+from app.core.limiter import limiter
 from app.services.claude_service import generate_story
 from pydantic import BaseModel, Field
 
@@ -29,22 +30,23 @@ class StoryResponse(BaseModel):
         from_attributes = True
 
 @router.post("/generate", response_model=StoryResponse)
-async def generate_story_endpoint(request: StoryRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+async def generate_story_endpoint(request: Request, body: StoryRequest, db: Session = Depends(get_db)):
     content = await generate_story(
-        destination=request.destination,
-        travel_style=request.travel_style,
-        duration_days=request.duration_days,
-        language=request.language,
-        preferences=request.preferences
+        destination=body.destination,
+        travel_style=body.travel_style,
+        duration_days=body.duration_days,
+        language=body.language,
+        preferences=body.preferences
     )
 
     story = Story(
         id=str(uuid.uuid4()),
-        destination=request.destination,
-        travel_style=request.travel_style,
-        duration_days=request.duration_days,
-        language=request.language,
-        preferences=request.preferences,
+        destination=body.destination,
+        travel_style=body.travel_style,
+        duration_days=body.duration_days,
+        language=body.language,
+        preferences=body.preferences,
         content=content,
         created_at=datetime.utcnow()
     )
