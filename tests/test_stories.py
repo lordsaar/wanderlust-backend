@@ -21,7 +21,7 @@ def test_generate_story_missing_destination():
         "travel_style": "foodie",
         "duration_days": 3
     })
-    assert response.status_code == 400
+    assert response.status_code == 422
 
 
 def test_generate_story_invalid_payload():

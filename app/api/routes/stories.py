@@ -1,20 +1,20 @@
 import uuid
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
 from app.models.story import Story
 from app.core.database import get_db
 from app.services.claude_service import generate_story
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 router = APIRouter()
 
 class StoryRequest(BaseModel):
-    destination: str
-    travel_style: str
-    duration_days: int
-    language: str = "English"
-    preferences: str = ""
+    destination: str = Field(min_length=1, max_length=100)
+    travel_style: str = Field(min_length=1, max_length=50)
+    duration_days: int = Field(ge=1, le=30)
+    language: str = Field(default="English", max_length=20)
+    preferences: str = Field(default="", max_length=500)
 
 class StoryResponse(BaseModel):
     id: str
@@ -30,9 +30,6 @@ class StoryResponse(BaseModel):
 
 @router.post("/generate", response_model=StoryResponse)
 async def generate_story_endpoint(request: StoryRequest, db: Session = Depends(get_db)):
-    if not request.destination.strip():
-        raise HTTPException(status_code=400, detail="Destination cannot be empty")
-
     content = await generate_story(
         destination=request.destination,
         travel_style=request.travel_style,
@@ -58,7 +55,7 @@ async def generate_story_endpoint(request: StoryRequest, db: Session = Depends(g
     return story
 
 @router.get("/", response_model=list[StoryResponse])
-def get_stories(db: Session = Depends(get_db), limit: int = 10):
+def get_stories(db: Session = Depends(get_db), limit: int = Query(default=10, ge=1, le=100)):
     stories = db.query(Story).order_by(Story.created_at.desc()).limit(limit).all()
     return stories
 
